@@ -1,0 +1,38 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy app to Azure VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          port: ${{ secrets.AZURE_VM_PORT || 22 }}
+          source: "."
+          target: ${{ secrets.AZURE_APP_PATH }}
+          rm: true
+
+      - name: Build and run app on Azure VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          port: ${{ secrets.AZURE_VM_PORT || 22 }}
+          script: |
+            set -e
+            cd ${{ secrets.AZURE_APP_PATH }}
+            docker compose down || true
+            docker compose up -d --build

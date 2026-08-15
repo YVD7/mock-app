@@ -45,5 +45,5 @@ python3 -m http.server 8080
 ```
 
 ## Deployment (free options)
-See the accompanying deployment guide for step-by-step instructions for
-Netlify, Vercel, and GitHub Pages.
+            See the CI workflow that builds Docker images, deploys to Azure VM, and triggers the OmniSight VLM orchestrator via webhook for automated visual testing and fixes.
+            This enables end‑to‑end deployment with self‑healing visual bug remediation.

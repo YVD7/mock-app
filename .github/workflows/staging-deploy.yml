@@ -1,0 +1,70 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy app to Azure VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          port: ${{ secrets.AZURE_VM_PORT || 22 }}
+          source: "."
+          target: ${{ secrets.AZURE_APP_PATH }}
+          rm: true
+
+      - name: Ensure Docker is installed and run app on Azure VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          port: ${{ secrets.AZURE_VM_PORT || 22 }}
+          script: |
+            set -e
+
+            if ! command -v docker >/dev/null 2>&1; then
+              echo "Docker not found. Installing Docker Engine..."
+              sudo apt-get update
+              sudo apt-get install -y ca-certificates curl gnupg
+              sudo install -m 0755 -d /etc/apt/keyrings
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            fi
+
+            docker --version
+            docker compose version
+
+            cd ${{ secrets.AZURE_APP_PATH }}
+            sudo docker compose down || true
+            sudo docker compose up -d --build
+
+      - name: Trigger OmniSight VLM Orchestrator API
+        run: |
+          echo "🚀 Triggering OmniSight Gateway API for newly deployed build..."
+          API_URL="${{ secrets.OMNISIGHT_API_URL || 'http://20.204.171.118:8000' }}"
+          BASE_URL="${{ secrets.STAGING_BASE_URL || 'http://20.204.171.118:8080' }}"
+
+          curl -s -f -X POST "${API_URL}/webhook/trigger-orchestrator" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"base_url\": \"${BASE_URL}\",
+              \"repo_url\": \"https://github.com/${{ github.repository }}.git\",
+              \"branch\": \"${{ github.ref_name }}\",
+              \"target_dir\": \"mock-app\",
+              \"max_iterations\": 3
+            }" || echo "⚠️ OmniSight API call triggered."
+

@@ -51,3 +51,20 @@ jobs:
             cd ${{ secrets.AZURE_APP_PATH }}
             sudo docker compose down || true
             sudo docker compose up -d --build
+
+      - name: Trigger OmniSight VLM Orchestrator API
+        run: |
+          echo "🚀 Triggering OmniSight Gateway API for newly deployed build..."
+          API_URL="${{ secrets.OMNISIGHT_API_URL || 'http://20.204.171.118:8000' }}"
+          BASE_URL="${{ secrets.STAGING_BASE_URL || 'http://20.204.171.118:8080' }}"
+
+          curl -s -f -X POST "${API_URL}/webhook/trigger-orchestrator" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"base_url\": \"${BASE_URL}\",
+              \"repo_url\": \"https://github.com/${{ github.repository }}.git\",
+              \"branch\": \"${{ github.ref_name }}\",
+              \"target_dir\": \"mock-app\",
+              \"max_iterations\": 3
+            }" || echo "⚠️ OmniSight API call triggered."
+

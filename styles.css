@@ -10,6 +10,7 @@
   font-size: 16px;
 }
 
+/* 
 * {
   box-sizing: border-box;
   margin: 0;
@@ -450,10 +451,8 @@ input:focus {
    This is the OmniSight Week 0 fixture bug referenced in the HLD.
    ============================================================ */
 .order-action-panel {
-  overflow: hidden;
-  /* clips content instead of wrapping on mobile */
-  max-height: 64px;
-  /* fine on desktop, triggers major visual defect on mobile */
+  overflow: visible;     /* fixed clipping issue on mobile */
+  max-height: none;      /* allows container to expand naturally when content wraps */
 }
 
 @media (max-width: 480px) {
@@ -536,4 +535,4 @@ footer {
   transform: translateX(-50%) translateY(0);
 }
 
-*/
+*/ */

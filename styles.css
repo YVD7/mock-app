@@ -318,7 +318,7 @@ input:focus { outline: 2px solid var(--rust); outline-offset: 1px; background: v
    ============================================================ */
 .order-action-panel {
   overflow: hidden;      /* clips content instead of wrapping on mobile */
-  max-height: 64px;      /* fine on desktop, triggers visual defect on mobile */
+  max-height: 64px;      /* fine on desktop, triggers major visual defect on mobile */
 }
 
 @media (max-width: 480px) {

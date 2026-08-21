@@ -146,7 +146,7 @@ main { max-width: 1160px; margin: -48px auto 0; padding: 0 24px 80px; }
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   transition: transform 0.15s ease, box-shadow 0.15s ease;

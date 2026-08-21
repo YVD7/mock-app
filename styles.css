@@ -146,7 +146,7 @@ main { max-width: 1160px; margin: -48px auto 0; padding: 0 24px 80px; }
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -317,8 +317,8 @@ input:focus { outline: 2px solid var(--rust); outline-offset: 1px; background: v
    This is the OmniSight Week 0 fixture bug referenced in the HLD.
    ============================================================ */
 .order-action-panel {
-  overflow: hidden;      /* clips content instead of wrapping on mobile */
-  max-height: 64px;      /* fine on desktop, triggers visual defect on mobile */
+  overflow: visible;      /* clips content instead of wrapping on mobile */
+  max-height: none;      /* fine on desktop, triggers visual defect on mobile */
 }
 
 @media (max-width: 480px) {
